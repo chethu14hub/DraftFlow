@@ -152,7 +152,7 @@
             const status = document.getElementById('status-text');
             
             // UI Change
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Initializing';
+            btn.innerH= '<i class="fa-solid fa-circle-notch fa-spin"></i> Initializing';
             btn.style.letterSpacing = '2px';
             status.style.display = 'block';
 
@@ -164,4 +164,4 @@
         }
     </script>
 </body>
-</html>
+</html>TML 
