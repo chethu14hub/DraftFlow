@@ -5,8 +5,8 @@
     <title>DraftBoard | Professional System Architect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 1. Added the high-end Serif font for your tagline sentence */
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap');
+        /* 1. Import Montserrat - The "Straight" Professional Tech Font */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&family=Montserrat:wght@500&display=swap');
 
         :root {
             --cream: #f5f5dc;
@@ -74,22 +74,22 @@
             animation: fadeIn 1s ease-out 0.5s forwards;
         }
 
-        /* --- 2. UPDATED FONT FOR THE TAGLINE SENTENCE --- */
+        /* --- 2. UPDATED STRAIGHT PROFESSIONAL TAGLINE --- */
         .tagline {
-            font-family: 'Cormorant Garamond', serif; /* New Professional Font */
-            font-style: italic;
-            font-weight: 400;
-            font-size: 1.8rem; /* Large size for authority */
-            margin: 15px 0 45px 0;
+            font-family: 'Montserrat', sans-serif; /* Straight, Geometric, Pro */
+            font-weight: 500;
+            font-size: 1.1rem; /* Slightly smaller size for that sleek tech look */
+            margin: 25px 0 50px 0;
             opacity: 0;
-            letter-spacing: 4px;
-            color: rgba(245, 245, 220, 0.85);
-            animation: focusIn 2s ease-out 1s forwards;
+            letter-spacing: 8px; /* Wide spacing makes it look premium */
+            text-transform: uppercase; /* All caps for the "Corporate" feel */
+            color: rgba(245, 245, 220, 0.6); 
+            animation: slideFade 1.5s ease-out 1s forwards;
         }
 
-        @keyframes focusIn {
-            0% { filter: blur(10px); opacity: 0; letter-spacing: 12px; }
-            100% { filter: blur(0); opacity: 1; letter-spacing: 4px; }
+        @keyframes slideFade {
+            from { opacity: 0; letter-spacing: 15px; transform: translateY(10px); }
+            to { opacity: 1; letter-spacing: 8px; transform: translateY(0); }
         }
 
         /* --- THE PRO BUTTON --- */
