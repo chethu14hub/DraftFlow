@@ -5,7 +5,8 @@
     <title>DraftBoard | Professional System Architect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&family=Playfair+Display:ital@1&display=swap');
+        /* 1. Added the high-end Serif font for your tagline sentence */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&family=Cormorant+Garamond:ital,wght@1,400&display=swap');
 
         :root {
             --cream: #f5f5dc;
@@ -73,15 +74,22 @@
             animation: fadeIn 1s ease-out 0.5s forwards;
         }
 
+        /* --- 2. UPDATED FONT FOR THE TAGLINE SENTENCE --- */
         .tagline {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Cormorant Garamond', serif; /* New Professional Font */
             font-style: italic;
-            font-size: 1.3rem;
+            font-weight: 400;
+            font-size: 1.8rem; /* Large size for authority */
             margin: 15px 0 45px 0;
             opacity: 0;
-            letter-spacing: 3px;
-            color: rgba(245, 245, 220, 0.7);
-            animation: fadeIn 1.5s ease-out 1s forwards;
+            letter-spacing: 4px;
+            color: rgba(245, 245, 220, 0.85);
+            animation: focusIn 2s ease-out 1s forwards;
+        }
+
+        @keyframes focusIn {
+            0% { filter: blur(10px); opacity: 0; letter-spacing: 12px; }
+            100% { filter: blur(0); opacity: 1; letter-spacing: 4px; }
         }
 
         /* --- THE PRO BUTTON --- */
@@ -100,6 +108,7 @@
             opacity: 0;
             animation: fadeIn 1s ease-out 1.5s forwards;
             overflow: hidden;
+            text-decoration: none;
         }
 
         .btn-enter:hover {
@@ -109,7 +118,6 @@
             box-shadow: 0 0 40px rgba(139, 121, 94, 0.6);
         }
 
-        /* --- AUTH LOADING STATE --- */
         #status-text {
             font-size: 10px;
             letter-spacing: 2px;
@@ -138,6 +146,7 @@
             <i class="fa-solid fa-compass-drafting"></i>
         </div>
         <h1>DraftBoard</h1>
+        
         <div class="tagline">Intelligent System Architecture Design</div>
         
         <div id="action-area">
@@ -151,17 +160,14 @@
             const btn = document.querySelector('.btn-enter');
             const status = document.getElementById('status-text');
             
-            // UI Change
-            btn.innerH= '<i class="fa-solid fa-circle-notch fa-spin"></i> Initializing';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Initializing';
             btn.style.letterSpacing = '2px';
             status.style.display = 'block';
 
-            // Wait for 1.5 seconds then redirect
             setTimeout(() => {
-                // IMPORTANT: Ensure this matches your login filename exactly!
                 window.location.href = "db_index.php"; 
             }, 1500);
         }
     </script>
 </body>
-</html>TML 
+</html>
