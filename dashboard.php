@@ -18,7 +18,7 @@ if ($row = $result->fetch_assoc()) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en">s
 <head>
     <meta charset="UTF-8">
     <title>DraftFlow Pro | <?php echo htmlspecialchars($project_name); ?></title>
