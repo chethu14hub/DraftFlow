@@ -13,14 +13,14 @@ $message = "";
 // --- STEP 2: PHP LOGIC FOR ALL LOGINS ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    // 2A. ADMIN LOGIN (Hardcoded - No DB Needed)
+    // 2A. ADMIN LOGIN (Hardcoded)
     if (isset($_POST['action']) && $_POST['action'] == 'admin_login') {
         $admin_user = "admin@draftboard.com";
-        $admin_pass = "admin123"; // You can change this later
+        $admin_pass = "admin123"; 
 
         if ($_POST['email'] === $admin_user && $_POST['password'] === $admin_pass) {
             $_SESSION['user_id'] = 'ADMIN_001';
-            $_SESSION['username'] = 'Head Architect';
+            $_SESSION['user_name'] = 'Head Architect'; 
             $_SESSION['role'] = 'admin';
             header("Location: admin_panel.php");
             exit();
@@ -29,24 +29,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    // 2B. USER REGISTRATION (Requires DB)
+    // 2B. USER REGISTRATION (Includes Recovery Key)
     if (isset($_POST['action']) && $_POST['action'] == 'register' && $db_status) {
         $user = mysqli_real_escape_string($conn, $_POST['username']);
         $email = mysqli_real_escape_string($conn, $_POST['email']);
+        $recovery = mysqli_real_escape_string($conn, $_POST['recovery_key']); // Added this
         $pass = password_hash($_POST['password'], PASSWORD_BCRYPT);
         
         $check_email = mysqli_query($conn, "SELECT id FROM users WHERE email='$email'");
         if(mysqli_num_rows($check_email) > 0) {
             $message = "<span style='color: #991b1b;'>Error: Email already in system.</span>";
         } else {
-            $sql = "INSERT INTO users (username, email, password, role) VALUES ('$user', '$email', '$pass', 'user')";
+            // Updated SQL to include recovery_key
+            $sql = "INSERT INTO users (username, email, password, recovery_key, role) VALUES ('$user', '$email', '$pass', '$recovery', 'user')";
             if (mysqli_query($conn, $sql)) {
                 $message = "<span style='color: #433422; font-weight:bold;'>Success! Please Login.</span>";
             }
         }
     } 
     
-    // 2C. USER LOGIN (Requires DB)
+    // 2C. USER LOGIN
     if (isset($_POST['action']) && $_POST['action'] == 'login' && $db_status) {
         $email = mysqli_real_escape_string($conn, $_POST['email']);
         $pass = $_POST['password'];
@@ -56,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if ($row && password_verify($pass, $row['password'])) {
             $_SESSION['user_id'] = $row['id'];
-            $_SESSION['username'] = $row['username'];
+            $_SESSION['user_name'] = $row['username']; 
             $_SESSION['role'] = 'user';
             header("Location: portal.php");
             exit();
@@ -115,6 +117,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .toggle-link { margin-top: 25px; font-size: 13px; color: #7a7a7a; cursor: pointer; }
         .toggle-link span { color: #8b795e; font-weight: bold; text-decoration: underline; }
 
+        .forgot-link { display: block; text-align: right; font-size: 11px; color: #8b795e; text-decoration: none; margin-top: -5px; }
+
         .hidden { display: none; }
         .db-error { background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 20px; }
     </style>
@@ -135,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="hidden" name="action" value="login">
         <input type="email" name="email" placeholder="Architect Email" required>
         <input type="password" name="password" placeholder="Passcode" required>
-        <button type="submit" <?php if(!$db_status) echo 'disabled style="opacity:0.4"'; ?>>ACCESS SYSTEM</button>
+        <a href="forgot_password.php" class="forgot-link">Forgot Passcode?</a> <button type="submit" <?php if(!$db_status) echo 'disabled style="opacity:0.4"'; ?>>ACCESS SYSTEM</button>
         <div class="toggle-link" onclick="showForm('register-form', 'NEW INITIALIZATION')">New Architect? <span>Initialize</span></div>
         <button type="button" class="admin-btn" onclick="showForm('admin-form', 'ADMINISTRATOR ACCESS')">Admin Login</button>
     </form>
@@ -145,7 +149,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="text" name="username" placeholder="Full Name" required>
         <input type="email" name="email" placeholder="Work Email" required>
         <input type="password" name="password" placeholder="Set Passcode" required>
-        <button type="submit" <?php if(!$db_status) echo 'disabled style="opacity:0.4"'; ?>>CREATE ACCOUNT</button>
+        <input type="text" name="recovery_key" placeholder="Secret Recovery Key" required> <button type="submit" <?php if(!$db_status) echo 'disabled style="opacity:0.4"'; ?>>CREATE ACCOUNT</button>
         <div class="toggle-link" onclick="showForm('login-form', 'ARCHITECTURE ENGINE')">Back to <span>User Login</span></div>
     </form>
 
@@ -160,15 +164,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <script>
     function showForm(formId, subtitle) {
-        // Hide all forms
         document.getElementById('login-form').classList.add('hidden');
         document.getElementById('register-form').classList.add('hidden');
         document.getElementById('admin-form').classList.add('hidden');
         
-        // Show selected form
         document.getElementById(formId).classList.remove('hidden');
-        
-        // Update subtitle text
         document.getElementById('form-title').innerText = subtitle;
     }
 </script>

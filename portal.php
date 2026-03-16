@@ -1,121 +1,87 @@
 <?php
 session_start();
 require_once('db_config.php');
-if (!isset($_SESSION['user_id'])) { header("Location: db_index.php"); exit(); }
 
-$user_name = $_SESSION['user_name'] ?? "Chethan Y";
+// Redirect if not logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: db_index.php");
+    exit();
+}
+
 $user_id = $_SESSION['user_id'];
+$user_name = $_SESSION['user_name'] ?? "Architect";
 
-// Improved Query: Fetch projects belonging to the logged-in user
+// Fetch all projects (including those "deleted" by admin)
 $query = "SELECT * FROM projects WHERE user_id = '$user_id' ORDER BY id DESC";
 $result = mysqli_query($conn, $query);
-
-$projects = [];
-if ($result) {
-    while($row = mysqli_fetch_assoc($result)) {
-        $projects[] = $row;
-    }
-}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DraftFlow | Professional Dashboard</title>
+    <title>DraftBoard | My Workspace</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --cream: #fdfcf0; --bronze: #8b795e; --dark: #1e293b; --slate: #64748b; }
-        body { font-family: 'Inter', sans-serif; background: var(--cream); margin: 0; color: var(--dark); overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background: #f5f5dc; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #8b795e; padding-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         
-        .navbar { background: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
-        .logo { font-weight: 800; font-size: 22px; color: var(--dark); letter-spacing: -1px; }
-        .logo span { color: var(--bronze); }
-
-        .container { max-width: 1100px; margin: 50px auto; padding: 0 20px; }
-
-        .welcome-hero { 
-            background: white; padding: 40px; border-radius: 20px; 
-            border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.02);
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 40px;
-        }
-
-        .btn-create { 
-            background: var(--bronze); color: white; padding: 14px 28px; 
-            border-radius: 12px; text-decoration: none; font-weight: 700; 
-            display: inline-flex; align-items: center; gap: 10px;
-            transition: 0.3s; border: none; font-size: 16px; cursor: pointer;
-        }
-        .btn-create:hover { background: #6f5f4a; transform: translateY(-2px); }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        
+        /* Normal Project Card */
         .project-card { 
-            background: white; padding: 25px; border-radius: 16px; 
-            border: 1px solid #e2e8f0; transition: 0.3s; cursor: pointer;
+            background: white; padding: 20px; border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+            transition: 0.3s;
         }
-        .project-card:hover { border-color: var(--bronze); box-shadow: 0 12px 20px rgba(0,0,0,0.05); }
+        .project-card:hover { transform: translateY(-5px); }
 
-        /* MODAL STYLES */
-        #nameModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; }
-        .modal-content { background:white; width:400px; margin:15% auto; padding:30px; border-radius:15px; text-align:center; }
-        .modal-input { width:100%; padding:12px; margin:20px 0; border:1px solid #ddd; border-radius:8px; box-sizing: border-box; }
+        /* Admin Deleted Styling */
+        .deleted-card { 
+            background: #fff5f5; border: 2px dashed #f87171; 
+            opacity: 0.8; position: relative; overflow: hidden;
+        }
+        .admin-notice { color: #b91c1c; font-size: 12px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+        
+        .btn-view { display: inline-block; margin-top: 15px; color: #8b795e; text-decoration: none; font-weight: 600; font-size: 14px; }
+        .logout-btn { color: #b91c1c; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo">Draft<span>Flow</span></div>
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <span style="font-weight: 600;"><?php echo $user_name; ?></span>
-            <a href="logout.php" style="color: #ef4444; text-decoration: none; font-weight: 600;">Logout</a>
-        </div>
-    </nav>
+<div class="header">
+    <h1>Welcome, <?php echo htmlspecialchars($user_name); ?></h1>
+    <a href="logout.php" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+</div>
 
-    <div class="container">
-        <div class="welcome-hero">
-            <div class="hero-text">
-                <h1>Hi, <?php echo explode(' ', $user_name)[0]; ?>!</h1>
-                <p>Welcome to DraftFlow. What are we building today?</p>
+<div class="grid">
+    <?php while($p = mysqli_fetch_assoc($result)): ?>
+        
+        <?php if ($p['deleted_by_admin'] == 1): ?>
+            <div class="project-card deleted-card">
+                <div class="admin-notice">
+                    <i class="fa-solid fa-circle-exclamation"></i> Access Revoked
+                </div>
+                <h3 style="margin: 10px 0; color: #7f1d1d;"><?php echo htmlspecialchars($p['project_name']); ?></h3>
+                <p style="font-size: 13px; color: #991b1b;">This project was deleted by the System Admin and is no longer editable.</p>
             </div>
-            <button onclick="document.getElementById('nameModal').style.display='block'" class="btn-create">
-                <i class="fa-solid fa-plus"></i> Start New Flow
-            </button>
-        </div>
 
-        <div class="grid">
-            <?php if (empty($projects)): ?>
-                <div style="grid-column: 1 / -1; text-align: center; color: var(--slate); padding: 50px;">
-                    <i class="fa-solid fa-folder-open" style="font-size: 40px; margin-bottom: 10px;"></i>
-                    <p>No projects saved yet. Create one to see it here!</p>
-                </div>
-            <?php else: ?>
-                <?php foreach($projects as $p): ?>
-                <div class="project-card" onclick="location.href='dashboard.php?project=<?php echo urlencode($p['project_name']); ?>'">
-                    <i class="fa-solid fa-diagram-project" style="color: var(--bronze); font-size: 24px; margin-bottom: 15px;"></i>
-                    <h3><?php echo htmlspecialchars($p['project_name']); ?></h3>
-                    <p style="font-size: 12px; color: #999;">Created on: <?php echo date('M d, Y', strtotime($p['updated_at'])); ?></p>
-                </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
+        <?php else: ?>
+            <div class="project-card">
+                <h3 style="margin: 0; color: #433422;"><?php echo htmlspecialchars($p['project_name']); ?></h3>
+                <p style="color: #64748b; font-size: 13px;">Project ID: #<?php echo $p['id']; ?></p>
+                <a href="editor.php?id=<?php echo $p['id']; ?>" class="btn-view">Open Workflow →</a>
+            </div>
+        <?php endif; ?>
+
+    <?php endwhile; ?>
+</div>
+
+<?php if(mysqli_num_rows($result) == 0): ?>
+    <div style="text-align: center; margin-top: 100px; color: #8b795e;">
+        <i class="fa-regular fa-folder-open fa-3x"></i>
+        <p>No active workflows found. Start your first project!</p>
     </div>
+<?php endif; ?>
 
-    <div id="nameModal">
-        <div class="modal-content">
-            <h3>Name your Architecture</h3>
-            <input type="text" id="projNameInput" class="modal-input" placeholder="e.g., E-commerce Backend">
-            <button onclick="startProject()" class="btn-create" style="width:100%; justify-content:center;">Create Project</button>
-            <p onclick="document.getElementById('nameModal').style.display='none'" style="margin-top:15px; cursor:pointer; color:var(--slate); font-size:12px;">Cancel</p>
-        </div>
-    </div>
-
-    <script>
-        function startProject() {
-            let name = document.getElementById('projNameInput').value;
-            if(name.trim() === "") { alert("Please enter a name"); return; }
-            location.href = "dashboard.php?new=true&project=" + encodeURIComponent(name);
-        }
-    </script>
 </body>
 </html>
