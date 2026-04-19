@@ -51,6 +51,16 @@
             border-radius: 24px;
             box-shadow: 0 40px 100px rgba(0,0,0,0.5);
             animation: containerSlide 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+<<<<<<< HEAD
+=======
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .content:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 60px 120px rgba(0,0,0,0.7);
+            border-color: rgba(139, 121, 94, 0.4);
+>>>>>>> c631a520ebf19dbf936074dbab1d7ccc72e9f24f
         }
 
         .logo-box {
@@ -59,6 +69,17 @@
             margin-bottom: 30px;
             display: inline-block;
             filter: drop-shadow(0 0 15px rgba(139, 121, 94, 0.3));
+<<<<<<< HEAD
+=======
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .logo-box:hover {
+            transform: scale(1.1) rotate(5deg);
+            filter: drop-shadow(0 0 25px rgba(139, 121, 94, 0.8));
+            color: var(--cream);
+>>>>>>> c631a520ebf19dbf936074dbab1d7ccc72e9f24f
         }
 
         h1 {
@@ -72,6 +93,17 @@
             -webkit-text-fill-color: transparent;
             opacity: 0;
             animation: fadeIn 1s ease-out 0.5s forwards;
+<<<<<<< HEAD
+=======
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        h1:hover {
+            letter-spacing: 20px;
+            transform: translateY(-5px);
+            filter: drop-shadow(0 0 20px rgba(139, 121, 94, 0.6));
+>>>>>>> c631a520ebf19dbf936074dbab1d7ccc72e9f24f
         }
 
         /* --- 2. UPDATED STRAIGHT PROFESSIONAL TAGLINE --- */
@@ -85,6 +117,17 @@
             text-transform: uppercase; /* All caps for the "Corporate" feel */
             color: rgba(245, 245, 220, 0.6); 
             animation: slideFade 1.5s ease-out 1s forwards;
+<<<<<<< HEAD
+=======
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .tagline:hover {
+            color: var(--cream);
+            letter-spacing: 12px;
+            transform: translateY(-3px);
+>>>>>>> c631a520ebf19dbf936074dbab1d7ccc72e9f24f
         }
 
         @keyframes slideFade {
