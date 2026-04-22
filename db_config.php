@@ -21,5 +21,5 @@ if (!$conn) {
 }
 
 // Manually define the key here because your .env is gone
-$groq_api_key =$_ENV['GROQ_API_KEY'];
+$apiKey = $_ENV['GROQ_API_KEY'] ?? '';
 ?>

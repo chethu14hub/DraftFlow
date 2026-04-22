@@ -140,7 +140,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="email" name="email" placeholder="Architect Email" required>
         <input type="password" name="password" placeholder="Passcode" required>
         <a href="forgot_password.php" class="forgot-link">Forgot Passcode?</a> <button type="submit" <?php if(!$db_status) echo 'disabled style="opacity:0.4"'; ?>>ACCESS SYSTEM</button>
-        <div class="toggle-link" onclick="showForm('register-form', 'NEW INITIALIZATION')">New Architect? <span>Initialize</span></div>
+       <div id="register-toggle" class="toggle-link" onclick="showForm('register-form', 'NEW INITIALIZATION')">
+    New Architect? <span>Initialize</span>
+</div>
         <button type="button" class="admin-btn" onclick="showForm('admin-form', 'ADMINISTRATOR ACCESS')">Admin Login</button>
     </form>
 
@@ -171,6 +173,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         document.getElementById(formId).classList.remove('hidden');
         document.getElementById('form-title').innerText = subtitle;
     }
+ window.onload = function() {
+    // Detect if the URL ends with #register
+    if (window.location.hash === "#register") {
+        
+        // Find the "Initialize" link using the ID we just added
+        const registerToggle = document.getElementById('register-toggle'); 
+        
+        if (registerToggle) {
+            // This triggers the onclick="showForm(...)" automatically
+            registerToggle.click();
+        }
+    }
+};
 </script>
 
 </body>
