@@ -1,34 +1,25 @@
 <?php
-<<<<<<< HEAD
-$host = "localhost";
-$user = "root";   // Default XAMPP user
-$pass = "";       // Default XAMPP password is empty
-$dbname = "draftboard_db"; // The name we gave our database
+// Smart Config: Works on XAMPP and Railway
+if (getenv('MYSQLHOST')) {
+    $host = getenv('MYSQLHOST');
+    $user = getenv('MYSQLUSER');
+    $pass = getenv('MYSQLPASSWORD');
+    $db   = getenv('MYSQLDATABASE');
+    $port = getenv('MYSQLPORT');
+} else {
+    $host = "localhost";
+    $user = "root";
+    $pass = "";
+    $db   = "draftboard_db";
+    $port = "3306";
+}
 
-// Create connection
-$conn = mysqli_connect($host, $user, $pass, $dbname);
+$conn = mysqli_connect($host, $user, $pass, $db, $port);
 
-// Check connection
-=======
-// 🔹 Load Composer (for dotenv)
-require_once __DIR__ . '/vendor/autoload.php';
-
-// 🔹 Load .env file
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
-// 🔹 Database credentials (can stay or move to .env later)
-$host = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "draftboard_db";
-
-// 🔹 Create connection
-$conn = mysqli_connect($host, $user, $pass, $dbname);
-
-// 🔹 Check connection
->>>>>>> c631a520ebf19dbf936074dbab1d7ccc72e9f24f
 if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
+
+// Manually define the key here because your .env is gone
+$groq_api_key =$_ENV['GROQ_API_KEY'];
 ?>
