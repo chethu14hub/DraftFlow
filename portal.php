@@ -32,7 +32,7 @@ if ($result) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --cream: #fdfcf0; --bronze: #8b795e; --dark: #1e293b; --slate: #64748b; }
-        body { font-family: 'Inter', sans-serif; background: var(--cream); margin: 0; color: var(--dark); }
+        body { font-family: 'Inter', sans-serif; background: var(--cream); margin: 0; color: var(--dark); overflow-x: hidden; }
         
         /* Navbar */
         .navbar { background: white; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
@@ -78,6 +78,36 @@ if ($result) {
         #nameModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; backdrop-filter: blur(4px); }
         .modal-content { background:white; width:400px; margin:15% auto; padding:35px; border-radius:20px; text-align:center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
         .modal-input { width: 100%; padding: 14px; margin: 20px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
+
+        /* --- NEW FEEDBACK STYLES --- */
+        .feedback-trigger {
+            position: fixed; bottom: 30px; right: 30px; background: var(--bronze);
+            color: white; width: 60px; height: 60px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 10px 25px rgba(139, 121, 94, 0.4); cursor: pointer;
+            transition: 0.3s; z-index: 1000; font-size: 24px;
+        }
+        .feedback-trigger:hover { transform: scale(1.1); background: #6f5f4a; }
+
+        .feedback-panel {
+            display: none; position: fixed; bottom: 100px; right: 30px;
+            width: 350px; background: white; border: 1px solid #e2e8f0;
+            border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            z-index: 1001; overflow: hidden; animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .feedback-header { background: var(--bronze); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .feedback-body { padding: 20px; }
+        
+        /* Star Rating CSS */
+        .star-rating { display: flex; flex-direction: row-reverse; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .star-rating input { display: none; }
+        .star-rating label { font-size: 25px; color: #ddd; cursor: pointer; transition: 0.2s; }
+        .star-rating input:checked ~ label { color: #ffc107; }
+        .star-rating label:hover, .star-rating label:hover ~ label { color: #ffca28; }
+        
+        .feedback-input { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-bottom: 15px; font-family: inherit; resize: none; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -109,7 +139,6 @@ if ($result) {
                 </div>
             <?php else: ?>
                 <?php foreach($projects as $p): ?>
-                    
                     <?php if (isset($p['deleted_by_admin']) && $p['deleted_by_admin'] == 1): ?>
                         <div class="project-card deleted-card">
                             <span class="admin-notice"><i class="fa-solid fa-triangle-exclamation"></i> Admin Deleted</span>
@@ -124,12 +153,12 @@ if ($result) {
                             <span class="btn-view">Open Architecture →</span>
                         </div>
                     <?php endif; ?>
-
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
     </div>
 
+    <!-- NEW ARCHITECTURE MODAL -->
     <div id="nameModal">
         <div class="modal-content">
             <h2 style="margin: 0;">New Architecture</h2>
@@ -140,18 +169,52 @@ if ($result) {
         </div>
     </div>
 
+    <!-- FEEDBACK FLOATING BUTTON -->
+    <div class="feedback-trigger" onclick="toggleFeedback()">
+        <i class="fa-solid fa-message"></i>
+    </div>
+
+    <!-- FEEDBACK PANEL -->
+    <div id="feedbackPanel" class="feedback-panel">
+        <div class="feedback-header">
+            <span style="font-weight: 700;"><i class="fa-solid fa-comment-dots"></i> Feedback</span>
+            <i class="fa-solid fa-xmark" onclick="toggleFeedback()" style="cursor:pointer;"></i>
+        </div>
+        <div class="feedback-body">
+            <form action="submit_feedback.php" method="POST">
+                <input type="hidden" name="user_name" value="<?php echo htmlspecialchars($user_name); ?>">
+                <p style="margin: 0 0 10px; font-size: 13px; color: var(--slate); text-align: center;">Rate your experience</p>
+                
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" class="fa-solid fa-star"></label>
+                    <input type="radio" id="star4" name="rating" value="4"/><label for="star4" class="fa-solid fa-star"></label>
+                    <input type="radio" id="star3" name="rating" value="3"/><label for="star3" class="fa-solid fa-star"></label>
+                    <input type="radio" id="star2" name="rating" value="2"/><label for="star2" class="fa-solid fa-star"></label>
+                    <input type="radio" id="star1" name="rating" value="1"/><label for="star1" class="fa-solid fa-star"></label>
+                </div>
+
+                <textarea name="description" class="feedback-input" rows="4" placeholder="How can we improve DraftFlow?" required></textarea>
+                <button type="submit" class="btn-create" style="width: 100%; justify-content: center;">Send Feedback</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         function startProject() {
             let name = document.getElementById('projNameInput').value;
             if(name.trim() === "") { alert("Please enter a name for your project."); return; }
-            // Redirects to dashboard.php with the new project name
             location.href = "dashboard.php?new=true&project=" + encodeURIComponent(name);
         }
 
-        // Close modal if user clicks outside of it
+        function toggleFeedback() {
+            let panel = document.getElementById('feedbackPanel');
+            panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+        }
+
         window.onclick = function(event) {
-            let modal = document.getElementById('nameModal');
-            if (event.target == modal) { modal.style.display = "none"; }
+            let nameModal = document.getElementById('nameModal');
+            let feedPanel = document.getElementById('feedbackPanel');
+            if (event.target == nameModal) { nameModal.style.display = "none"; }
         }
     </script>
 </body>

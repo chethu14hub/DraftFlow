@@ -19,6 +19,10 @@ $result = mysqli_query($conn, $query);
 $total_users = mysqli_num_rows($result);
 $total_projects_res = mysqli_query($conn, "SELECT COUNT(*) as total FROM projects");
 $total_projects = mysqli_fetch_assoc($total_projects_res)['total'];
+
+// NEW: Get Feedback Count
+$feedback_count_res = mysqli_query($conn, "SELECT COUNT(*) as total FROM feedback");
+$total_feedback = mysqli_fetch_assoc($feedback_count_res)['total'];
 ?>
 
 <!DOCTYPE html>
@@ -36,8 +40,8 @@ $total_projects = mysqli_fetch_assoc($total_projects_res)['total'];
         
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         
-        /* Stats Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        /* Stats Cards - Updated to 4 columns to fit Feedback */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .stat-card h3 { margin: 0; color: #64748b; font-size: 14px; text-transform: uppercase; }
         .stat-card p { font-size: 28px; font-weight: 800; margin: 10px 0 0 0; color: var(--bronze); }
@@ -54,6 +58,14 @@ $total_projects = mysqli_fetch_assoc($total_projects_res)['total'];
         }
         .btn-inspect:hover { background: var(--bronze); }
         
+        /* New Feedback Button Style */
+        .btn-feedback {
+            background: #f59e0b; color: white; padding: 10px 20px; border-radius: 8px;
+            text-decoration: none; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px;
+            transition: 0.3s;
+        }
+        .btn-feedback:hover { background: #d97706; transform: translateY(-2px); }
+        
         .badge { background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
     </style>
 </head>
@@ -62,6 +74,10 @@ $total_projects = mysqli_fetch_assoc($total_projects_res)['total'];
 <nav class="admin-nav">
     <div class="logo"><i class="fa-solid fa-shield-halved"></i> SYSTEM <span>OVERSIGHT</span></div>
     <div style="display: flex; gap: 20px; align-items: center;">
+        <!-- NEW: Feedback Portal Button -->
+        <a href="admin_feedback.php" class="btn-feedback">
+            <i class="fa-solid fa-comment-dots"></i> User Feedback
+        </a>
         <span class="badge">Admin: <?php echo $_SESSION['user_name']; ?></span>
         <a href="logout.php" style="color: #ef4444; text-decoration: none; font-weight: 700;">Logout</a>
     </div>
@@ -77,14 +93,19 @@ $total_projects = mysqli_fetch_assoc($total_projects_res)['total'];
             <h3>Total Active Flows</h3>
             <p><?php echo $total_projects; ?></p>
         </div>
+        <!-- NEW: Feedback Stat Card -->
         <div class="stat-card">
-    <h3>System Status</h3>
-    <?php if ($conn): ?>
-        <p style="color: #22c55e;"><i class="fa-solid fa-circle-check"></i> Operational</p>
-    <?php else: ?>
-        <p style="color: #ef4444;"><i class="fa-solid fa-circle-xmark"></i> Database Offline</p>
-    <?php endif; ?>
-</div>
+            <h3>User Feedback</h3>
+            <p><?php echo $total_feedback; ?></p>
+        </div>
+        <div class="stat-card">
+            <h3>System Status</h3>
+            <?php if ($conn): ?>
+                <p style="color: #22c55e;"><i class="fa-solid fa-circle-check"></i> Operational</p>
+            <?php else: ?>
+                <p style="color: #ef4444;"><i class="fa-solid fa-circle-xmark"></i> Database Offline</p>
+            <?php endif; ?>
+        </div>
     </div>
 
     <table class="user-table">
