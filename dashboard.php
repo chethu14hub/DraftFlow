@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     header('Content-Type: application/json');
     $input = json_decode(file_get_contents('php://input'), true);
     // Instead of using getenv or $_ENV, use the actual key string
-$groq_api_key = "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";
+$groq_api_key =$_ENV['GROQ_API_KEY'];
 
     $systemInstructions = "You are the DraftFlow Pro AI Guide for $user_name. 
     1. Drag modules from the left to create nodes.
