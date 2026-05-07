@@ -1,99 +1,39 @@
 <?php
 session_start();
 require_once('db_config.php');
-// Use this function to actually load the values into $_ENV
-function loadEnv($path) {
-    if (!file_exists($path)) return;
-    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        list($name, $value) = explode('=', $line, 2);
-        $_ENV[trim($name)] = trim($value);
-    }
-}
-
-loadEnv(__DIR__ . '/.env');
-$apiKey = $_ENV['GROQ_API_KEY'] ?? '';
-
-
-
-
-
-
-
 if (!isset($_SESSION['user_id'])) { header("Location: db_index.php"); exit(); }
 
 $user_name = $_SESSION['user_name'] ?? "Architect";
 $user_id = $_SESSION['user_id'];
 $project_name = $_GET['project'] ?? "New System Architecture";
+
+// --- GROQ AI INTERNAL BRIDGE ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['action'] === 'chat') {
-    // Clear any previous output to ensure only JSON is sent
-    ob_clean();
     header('Content-Type: application/json');
-
-    // Get the raw input
     $input = json_decode(file_get_contents('php://input'), true);
-    $userMsg = $input['message'] ?? '';
+    // Instead of using getenv or $_ENV, use the actual key string
+$groq_api_key = "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";
 
-    // Your working API details
-    $apiKey = $_ENV['GROQ_API_KEY'];
-    $url = 'https://api.groq.com/openai/v1/chat/completions';
-    // Define the persona based on your specific project needs
+    $systemInstructions = "You are the DraftFlow Pro AI Guide for $user_name. 
+    1. Drag modules from the left to create nodes.
+    2. Click nodes to configure tech stacks.
+    3. Drag bronze dots to connect.
+    Provide concise software architecture advice.";
 
-$systemInstructions = "You are the DraftFlow Guide for $user_name. 
-Your knowledge is STRICTLY limited to the following project information:
+    $data = [
+        'model' => 'llama-3.3-70b-versatile',
+        'messages' => [['role' => 'system', 'content' => $systemInstructions], ['role' => 'user', 'content' => $input['message'] ?? '']],
+        'temperature' => 0.7
+    ];
 
-1. Project Overview: DraftFlow  is a software architecture design tool.
-2. How to use:
-   - Drag modules (Frontend, Backend, Database, etc.) from the left sidebar onto the canvas.
-   - Click on a placed node to configure its tech stack.
-   - Drag from the bronze dots on a node to connect it to another node.
-   - Use the 'Save' button to store your architecture.
-   - Use 'Export' to download the design as a blueprint.
-   -if user greet  react as greeting
-
-STRICT RULES:
-- Only provide information about DraftFlow  and the drag-and-drop steps above.
-- If the user asks about anything else (e.g., general coding, food, weather, personal questions), you MUST respond exactly with: 'For further inquiries or support, please contact draftflow@gmail.com'. 
-- Do not provide any other helpful advice or external information.";
-
-$data = [
-    'model' => 'llama-3.3-70b-versatile',
-    'messages' => [
-        ['role' => 'system', 'content' => $systemInstructions],
-        ['role' => 'user', 'content' => $userMsg]
-    ],
-    'temperature' => 0.9 // Lower is more focused, higher is more creative
-];
-
-   
-
-    $ch = curl_init($url);
+    $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . $apiKey
-    ]);
-
-    // THE CRITICAL FIXES FROM TEST_AI.PHP
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-
-    $response = curl_exec($ch);
-
-    if (curl_errno($ch)) {
-        echo json_encode(['reply' => 'Connection Error: ' . curl_error($ch)]);
-    } else {
-        $result = json_decode($response, true);
-        // Extract the reply and send it back
-        $aiReply = $result['choices'][0]['message']['content'] ?? 'AI error: No text in response';
-        echo json_encode(['reply' => $aiReply]);
-    }
-
-    curl_close($ch);
-    exit; // Stop everything else so HTML doesn't leak into the JSON
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json', 'Authorization: Bearer ' . $apiKey]);
+    echo curl_exec($ch);
+    exit();
 }
 
 $saved_data = "{}"; 
@@ -261,48 +201,21 @@ if ($row = $result->fetch_assoc()) { $saved_data = $row['project_data']; }
         document.addEventListener('mouseup', () => { isDraggingCanvas = false; });
 
         async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const chatBody = document.getElementById('chat-body');
-    const userMsg = input.value.trim();
-    if(!userMsg) return;
-
-    // Show User Message
-    const uDiv = document.createElement('div'); 
-    uDiv.className = 'message user-msg'; 
-    uDiv.textContent = userMsg; 
-    chatBody.appendChild(uDiv);
-    
-    input.value = ''; 
-    chatBody.scrollTop = chatBody.scrollHeight;
-
-    // Show Typing Indicator
-    const typingDiv = document.createElement('div'); 
-    typingDiv.className = 'message bot-msg'; 
-    typingDiv.textContent = "..."; 
-    chatBody.appendChild(typingDiv);
-
-    try {
-        const response = await fetch('dashboard.php?action=chat', { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify({ message: userMsg }) 
-        });
-
-        const data = await response.json();
-
-        // FIX: Use 'data.reply' instead of the long 'choices' path
-        if (data.reply) {
-            typingDiv.innerHTML = data.reply.replace(/\n/g, '<br>');
-        } else {
-            typingDiv.textContent = "Error: AI sent an empty response.";
+            const input = document.getElementById('chat-input');
+            const chatBody = document.getElementById('chat-body');
+            const userMsg = input.value.trim();
+            if(!userMsg) return;
+            const uDiv = document.createElement('div'); uDiv.className = 'message user-msg'; uDiv.textContent = userMsg; chatBody.appendChild(uDiv);
+            input.value = ''; chatBody.scrollTop = chatBody.scrollHeight;
+            const typingDiv = document.createElement('div'); typingDiv.className = 'message bot-msg'; typingDiv.textContent = "..."; chatBody.appendChild(typingDiv);
+            try {
+                const response = await fetch('dashboard.php?action=chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: userMsg }) });
+                const data = await response.json();
+                typingDiv.innerHTML = data.choices[0].message.content.replace(/\n/g, '<br>');
+            } catch (error) { typingDiv.textContent = "AI unreachable."; }
+            chatBody.scrollTop = chatBody.scrollHeight;
         }
 
-    } catch (error) { 
-        console.error("Fetch Error:", error); 
-        typingDiv.textContent = "AI unreachable."; 
-    }
-    chatBody.scrollTop = chatBody.scrollHeight;
-}
         instance.bind("click", c => { if(confirm("Remove connection?")) { instance.deleteConnection(c); saveState(); } });
 
         function saveState() {
@@ -451,7 +364,6 @@ if ($row = $result->fetch_assoc()) { $saved_data = $row['project_data']; }
 
         function deleteSelected() { if (selectedNode) { instance.remove(selectedNode); delete nodeDataStore[selectedNode.id]; saveState(); closePanel(); } }
         function closePanel() { document.getElementById('details-panel').style.display = 'none'; if(selectedNode) selectedNode.classList.remove('selected'); selectedNode = null; }
-    
     </script>
 </body>
 </html>
