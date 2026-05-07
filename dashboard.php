@@ -14,11 +14,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['action']) && $_GET['ac
     // Instead of using getenv or $_ENV, use the actual key string
 $groq_api_key =$_ENV['GROQ_API_KEY'];
 
-    $systemInstructions = "You are the DraftFlow Pro AI Guide for $user_name. 
-    1. Drag modules from the left to create nodes.
-    2. Click nodes to configure tech stacks.
-    3. Drag bronze dots to connect.
-    Provide concise software architecture advice.";
+    $systemInstructions = "You are the DraftFlow Pro Guide for $user_name. 
+Your knowledge is STRICTLY limited to the following project information:
+
+1. Project Overview: DraftFlow Pro is a software architecture design tool.
+2. How to use:
+   - Drag modules (Frontend, Backend, Database, etc.) from the left sidebar onto the canvas.
+   - Click on a placed node to configure its tech stack.
+   - Drag from the bronze dots on a node to connect it to another node.
+   - Use the 'Save' button to store your architecture.
+   - Use 'Export' to download the design as a blueprint.
+   - if user greet as hi replay with hello and ask how can i help you in your design.
+
+STRICT RULES:
+- Only provide information about DraftFlow Pro and the drag-and-drop steps above.
+- If the user asks about anything else (e.g., general coding, food, weather, personal questions), you MUST respond exactly with: 'For further inquiries or support, please contact draftflow@gmail.com'. 
+- Do not provide any other helpful advice or external information.";
+
 
     $data = [
         'model' => 'llama-3.3-70b-versatile',
@@ -31,7 +43,8 @@ $groq_api_key =$_ENV['GROQ_API_KEY'];
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json', 'Authorization: Bearer ' . $apiKey]);
+    // Change $apiKey to $groq_api_key to match your variable definition above
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json', 'Authorization: Bearer ' . $groq_api_key]);
     echo curl_exec($ch);
     exit();
 }
